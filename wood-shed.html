@@ -2,12 +2,47 @@
 <html>
 <head>
     <title>Wood Shed</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Young+Serif&display=swap" rel="stylesheet">
     <style>
         body { margin: 0; overflow: hidden; }
         canvas { display: block; }
+
+        /* Back button styling */
+        #backButton {
+	    color: white;
+            position: fixed;
+            top: 25px;
+            left: 25px;
+            z-index: 1000;
+            padding: 10px 20px;
+            background: rgba(194, 90, 75, 1.0);
+            border: none;
+            border-radius: 30px;
+            font-family: Young Serif;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.0);
+            transition: all 0.3s ease;
+        }
+        #backButton:hover {
+            background: rgba(193, 116, 101, 1.0);
+            transform: translateY(-3px);
+            box-shadow: 0 7px 15px rgba(66,163,119,0.75);
+        }
+
+        .young-serif-regular {
+            font-family: "Young Serif", serif;
+            font-weight: 400;
+            font-style: normal;
+        }
     </style>
 </head>
 <body>
+    <!-- Back button -->
+    <button id="backButton" onclick="window.history.back()">Back</button>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
