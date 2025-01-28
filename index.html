@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Crisp Shadow Model Viewer</title>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+
+    <script>
+        let model, camera, controls, scene, renderer;
+
+        init();
+        animate();
+
+        function init() {
+            scene = new THREE.Scene();
+            
+            // Renderer with anti-aliased shadow configuration
+            renderer = new THREE.WebGLRenderer({ 
+                antialias: true 
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setClearColor(0xEDE2CF);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFShadowMap; // Default anti-aliased mode
+            document.body.appendChild(renderer.domElement);
+
+            // Key Light configuration
+            const keyLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            keyLight.position.set(5, 5, 5);
+            keyLight.castShadow = true;
+            keyLight.shadow.mapSize.width = 4096;
+            keyLight.shadow.mapSize.height = 4096;
+            keyLight.shadow.bias = -0.001;
+            keyLight.shadow.normalBias = 0.05;
+            scene.add(keyLight);
+
+            // Fill and back lights (unchanged)
+            const fillLight = new THREE.DirectionalLight(0xffffff, 0.4);
+            fillLight.position.set(-5, 3, 2);
+            scene.add(fillLight);
+
+            const backLight = new THREE.DirectionalLight(0xffffff, 0.3);
+            backLight.position.set(0, 5, -5);
+            scene.add(backLight);
+
+            scene.add(new THREE.AmbientLight(0xffffff, 0.2));
+
+            // Camera and controls setup
+            camera = new THREE.PerspectiveCamera(50, window.innerWidth/window.innerHeight, 0.1, 1000);
+            
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.enablePan = false;
+
+            // Model loading
+            const loader = new THREE.GLTFLoader();
+            loader.load('Shed_Test_01.glb', (gltf) => {
+                model = gltf.scene;
+                
+                model.traverse((child) => {
+                    if (child.isMesh) {
+                        child.castShadow = true;
+                        child.receiveShadow = true;
+                    }
+                });
+
+                scene.add(model);
+
+                // Centering and camera positioning
+                const originalBox = new THREE.Box3().setFromObject(model);
+                const originalCenter = originalBox.getCenter(new THREE.Vector3());
+                model.position.sub(originalCenter);
+
+                const centeredBox = new THREE.Box3().setFromObject(model);
+                const size = centeredBox.getSize(new THREE.Vector3());
+                const verticalMidpoint = (centeredBox.min.y + centeredBox.max.y) / 2;
+
+                const maxDimension = Math.max(size.x, size.y, size.z);
+                controls.target.set(0, verticalMidpoint, 0);
+                camera.position.set(0, verticalMidpoint, maxDimension * 2);
+                camera.lookAt(0, verticalMidpoint, 0);
+                
+                controls.minDistance = size.y * 0.5;
+                controls.maxDistance = size.y * 4;
+                controls.update();
+            });
+
+            window.addEventListener('resize', onWindowResize);
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth/window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+    </script>
+</body>
+</html>
