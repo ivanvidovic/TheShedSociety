@@ -10,48 +10,54 @@
     <style>
         body {
             background-color: #bfdacc;
-            margin: 0; /* Reset default body margin */
+            margin: 0;
             display: flex;
-            justify-content: center; /* Center horizontally */
-            align-items: center; /* Center vertically */
-            min-height: 100vh; /* Ensure full viewport height */
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
             font-family: Young Serif;
-	    font-size: 1.5rem;
+            font-size: 1.5rem;
         }
 
         .button-container {
             display: flex;
-            flex-direction: column; /* Stack buttons vertically */
-            gap: 10px; /* Spacing between buttons */
-            width: 50%; /* Button container width on larger screens */
-            max-width: 300px; /* Maximum width for the container */
+            flex-direction: column;
+            gap: 20px;
+            width: 50%;
+            max-width: 300px;
         }
 
         .button-link {
-            display: block; /* Make the anchor fill the button */
-            text-decoration: none; /* Remove underline from links */
-            color: white; /* Dark text color */
-            background-color: #c25a4b; /* Light gray button background */
+            display: block;
+            text-decoration: none;
+            color: white;
+            background-color: #c25a4b;
             padding: 30px 20px;
             text-align: center;
-            border-radius: 50px; /* Rounded corners */
-            border: 1px solid #ccc; /* Light gray border */
-            transition: background-color 0.3s ease; /* Smooth background transition */
+            border-radius: 50px;
+            border: 0px solid #ccc;
+            transition: all 0.3s ease;
         }
 
         .button-link:hover {
-            background-color: #c17465; /* Slightly darker on hover */
+            background-color: #c17465;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(66,163,119,0.75);
         }
 
-	.young-serif-regular {
-	  font-family: "Young Serif", serif;
-	  font-weight: 400;
-	  font-style: normal;
-	}
+        .button-link:active {
+            transform: translateY(0);
+        }
+
+        .young-serif-regular {
+            font-family: "Young Serif", serif;
+            font-weight: 400;
+            font-style: normal;
+        }
 
         @media (max-width: 600px) {
             .button-container {
-                width: 95%; /* Wider container on smaller screens */
+                width: 95%;
             }
         }
     </style>
