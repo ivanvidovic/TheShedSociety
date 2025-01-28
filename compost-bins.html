@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Compost Bins</title>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+
+    <script>
+        let model, camera, controls, scene, renderer;
+
+        init();
+        animate();
+
+        function init() {
+            scene = new THREE.Scene();
+            
+            // Renderer configuration
+            renderer = new THREE.WebGLRenderer({ 
+                antialias: true 
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setClearColor(0xBFDACC);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            document.body.appendChild(renderer.domElement);
+
+            // Shadow catcher plane (added before model loading)
+            const shadowCatcher = new THREE.Mesh(
+                new THREE.PlaneGeometry(1000, 1000),
+                new THREE.ShadowMaterial({
+                    opacity: 0.3,
+                    transparent: true
+                })
+            );
+            shadowCatcher.rotation.x = -Math.PI / 2;
+            shadowCatcher.position.y = 0;
+            shadowCatcher.receiveShadow = true;
+            scene.add(shadowCatcher);
+
+            // Lighting setup
+            const keyLight = new THREE.DirectionalLight(0xffffff, 0.2);
+            keyLight.position.set(5, 5, 5);
+            keyLight.castShadow = true;
+            keyLight.shadow.mapSize.width = 4096;
+            keyLight.shadow.mapSize.height = 4096;
+            keyLight.shadow.bias = -0.0001;
+            keyLight.shadow.normalBias = 0.02;
+            keyLight.shadow.radius = 1.5;
+            scene.add(keyLight);
+
+            const fillLight = new THREE.DirectionalLight(0xffffff, 0.2);
+            fillLight.position.set(-5, 3, 2);
+            scene.add(fillLight);
+
+            const backLight = new THREE.DirectionalLight(0xffffff, 0.2);
+            backLight.position.set(0, 5, -5);
+            scene.add(backLight);
+
+            scene.add(new THREE.AmbientLight(0xffffff, 0.9));
+
+            // Camera setup
+            camera = new THREE.PerspectiveCamera(50, window.innerWidth/window.innerHeight, 0.1, 1000);
+            
+            // Controls configuration
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.enablePan = false;
+
+            // Model loading with bottom positioning at y=0
+            const loader = new THREE.GLTFLoader();
+            loader.load('Compost_Bins_01.glb', (gltf) => {
+                model = gltf.scene;
+                
+                model.traverse((child) => {
+                    if (child.isMesh) {
+                        child.castShadow = true;
+                        child.receiveShadow = true;
+                    }
+                });
+
+                scene.add(model);
+
+                // Calculate model dimensions
+                const box = new THREE.Box3().setFromObject(model);
+                const center = box.getCenter(new THREE.Vector3());
+                const size = box.getSize(new THREE.Vector3());
+                const minY = box.min.y;
+
+                // Position model with bottom at y=0 and centered in X/Z
+                model.position.set(-center.x, -minY, -center.z);
+
+                // Calculate adaptive camera distance
+                const maxDim = Math.max(size.x, size.y, size.z);
+                const fov = camera.fov * (Math.PI / 180);
+                const paddingFactor = 1.0;
+                const cameraDistance = (maxDim * paddingFactor) / Math.tan(fov / 2);
+
+                // Set camera position and focus
+                camera.position.set(0, size.y * 0.5, cameraDistance);
+                camera.lookAt(0, size.y * 0.6, 0);
+                
+                // Dynamic clipping planes
+                camera.near = maxDim * 0.01;
+                camera.far = maxDim * 100;
+                camera.updateProjectionMatrix();
+
+                // Update controls
+                controls.target.set(0, size.y * 0.6, 0);
+                controls.minDistance = maxDim * 0.05;
+                controls.maxDistance = maxDim * 6;
+                controls.update();
+            });
+
+            window.addEventListener('resize', onWindowResize);
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth/window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+    </script>
+</body>
+</html>
